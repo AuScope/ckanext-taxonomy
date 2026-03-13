@@ -11,6 +11,7 @@ class TaxonomyPlugin(p.SingletonPlugin):
     '''
 
     p.implements(p.IBlueprint)
+    p.implements(p.IClick)
     p.implements(p.IConfigurer, inherit=True)
     p.implements(p.IActions, inherit=True)
     p.implements(p.IAuthFunctions, inherit=True)
@@ -21,6 +22,12 @@ class TaxonomyPlugin(p.SingletonPlugin):
     def get_blueprint(self):
         from ckanext.taxonomy.views import taxonomy_blueprint
         return [taxonomy_blueprint]
+
+    # IClick
+
+    def get_commands(self):
+        from ckanext.taxonomy.cli import get_commands
+        return get_commands()
 
     def update_config(self, config):
         p.toolkit.add_template_directory(config, 'templates')

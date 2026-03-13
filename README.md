@@ -38,10 +38,39 @@ pip install -e ".[dev]"
 2. Initialize the database tables:
 
     ```bash
-    paster taxonomy init -c /etc/ckan/production.ini
+    ckan -c /etc/ckan/production.ini taxonomy initdb
     ```
 
+    (Legacy paster equivalent: `paster taxonomy init -c /etc/ckan/production.ini`)
+
 ## Command-line cheat sheet
+
+### Click CLI (CKAN 2.10+)
+
+| Command | Description |
+|---------|-------------|
+| `ckan -c <INI> taxonomy initdb` | Create taxonomy database tables (idempotent) |
+| `ckan -c <INI> taxonomy seed-defaults -f <YAML>` | Seed taxonomies from a YAML file (skips if data exists) |
+| `ckan -c <INI> taxonomy seed-defaults -f <YAML> --force` | Clear all taxonomy data, then re-seed from YAML |
+| `ckan -c <INI> taxonomy seed-defaults -f <YAML> --sync` | Add only missing taxonomies/terms from YAML |
+
+### Seed YAML format
+
+```yaml
+taxonomies:
+  - name: topics
+    title: Topics
+    uri: http://example.com/topics
+    terms:
+      - label: Science
+        uri: http://example.com/topics/science
+        terms:
+          - label: Physics
+          - label: Chemistry
+      - label: Arts
+```
+
+### Legacy paster CLI
 
 | Command | Description |
 |---------|-------------|
@@ -106,13 +135,14 @@ docker build -f Dockerfile.test -t ckanext-taxonomy-test .
 docker run --rm ckanext-taxonomy-test
 ```
 
-The test suite covers the vendored SKOS loader (`test_skos_loader.py`). Tests that depend on a full CKAN environment (actions, models, auth) require running inside a CKAN Docker container with a database.
+The test suite covers the vendored SKOS loader (`test_skos_loader.py`), Flask blueprint wiring (`test_views.py`), and Click CLI structure and YAML parsing (`test_cli.py`). Tests that depend on a full CKAN environment (actions, models, auth, seed logic) require running inside a CKAN Docker container with a database.
 
 ## Removing the extension
 
 1. Drop the database tables:
 
     ```bash
+    # Legacy paster (no Click equivalent yet):
     paster taxonomy cleanup -c /etc/ckan/production.ini
     ```
 
@@ -131,13 +161,15 @@ This fork has been updated from the original `datagovuk/ckanext-taxonomy` to wor
 | Install | Required `pip install -e "git+..."` | Standard `pip install .` from source tree |
 | Routing | Pylons `IRoutes` + `BaseController` (removed in CKAN 2.10) | Flask `IBlueprint` + view functions in `views.py` |
 | Templates | `h.nav_link(controller=..., action=...)` and `c.*` globals | `h.url_for('taxonomy.index')` and extra_vars |
+| CLI | `paster` commands only | Click CLI (`IClick`) + legacy paster via compatibility layer |
+| Seed data | Manual API calls or SKOS RDF only | YAML seed files via `ckan taxonomy seed-defaults` |
 | Tests | `nosetests` | `pytest` via Docker |
 
 ### Known follow-up items
 
 - `ckanext/__init__.py` still uses `pkg_resources.declare_namespace()` — works but emits deprecation warnings. Can be replaced with implicit namespace packages.
-- The paster CLI works via CKAN's compatibility layer. A future update could add a Click-based CLI for CKAN 2.10+.
 - The old `controllers.py` is still present in the tree but no longer used by the plugin. It can be removed once migration is confirmed stable.
+- The old paster `commands.py` is still present for backward compatibility via CKAN's paster shim. The preferred CLI is now Click-based (`cli.py`).
 
 ## License
 

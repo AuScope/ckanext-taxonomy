@@ -15,9 +15,10 @@ setup(
     python_requires='>=3.8',
     install_requires=[
         'rdflib>=6.0.0',
+        'pyyaml',
     ],
     extras_require={
-        'dev': ['pytest', 'flask'],
+        'dev': ['pytest', 'flask', 'click'],
     },
     entry_points={
         'paste.paster_command': [
@@ -25,6 +26,9 @@ setup(
         ],
         'ckan.plugins': [
             'taxonomy = ckanext.taxonomy.plugin:TaxonomyPlugin',
+        ],
+        'ckan.click_command': [
+            'taxonomy = ckanext.taxonomy.cli:taxonomy',
         ],
     },
 )

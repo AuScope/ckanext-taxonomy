@@ -6,4 +6,4 @@ COPY . /app
 
 RUN pip install --no-cache-dir -e ".[dev]" 2>&1
 
-CMD ["pytest", "-v", "ckanext/taxonomy/tests/test_skos_loader.py", "ckanext/taxonomy/tests/test_views.py"]
+CMD ["pytest", "-v", "ckanext/taxonomy/tests/test_skos_loader.py", "ckanext/taxonomy/tests/test_views.py", "ckanext/taxonomy/tests/test_cli.py"]
