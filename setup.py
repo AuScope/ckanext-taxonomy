@@ -17,7 +17,7 @@ setup(
         'rdflib>=6.0.0',
     ],
     extras_require={
-        'dev': ['pytest'],
+        'dev': ['pytest', 'flask'],
     },
     entry_points={
         'paste.paster_command': [

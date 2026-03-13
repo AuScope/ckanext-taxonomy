@@ -129,12 +129,15 @@ This fork has been updated from the original `datagovuk/ckanext-taxonomy` to wor
 | `python-skos` | Pinned `==0.1.1` via git `dependency_links` (abandoned, not on PyPI) | Replaced with vendored `skos_loader.py` (~70 lines using rdflib directly) |
 | Packaging | `ez_setup` fallback, `namespace_packages`, `dependency_links` | Minimal `setup.py` + `pyproject.toml` with `setuptools.build_meta` |
 | Install | Required `pip install -e "git+..."` | Standard `pip install .` from source tree |
+| Routing | Pylons `IRoutes` + `BaseController` (removed in CKAN 2.10) | Flask `IBlueprint` + view functions in `views.py` |
+| Templates | `h.nav_link(controller=..., action=...)` and `c.*` globals | `h.url_for('taxonomy.index')` and extra_vars |
 | Tests | `nosetests` | `pytest` via Docker |
 
 ### Known follow-up items
 
 - `ckanext/__init__.py` still uses `pkg_resources.declare_namespace()` — works but emits deprecation warnings. Can be replaced with implicit namespace packages.
 - The paster CLI works via CKAN's compatibility layer. A future update could add a Click-based CLI for CKAN 2.10+.
+- The old `controllers.py` is still present in the tree but no longer used by the plugin. It can be removed once migration is confirmed stable.
 
 ## License
 

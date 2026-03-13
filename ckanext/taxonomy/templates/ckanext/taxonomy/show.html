@@ -10,14 +10,14 @@
 {% endblock %}
 
 {% block breadcrumb_content %}
-  <li>{{ h.nav_link(_('Datasets'), controller='package', action='search') }}</li>
-  <li>{{ h.nav_link(_('Taxonomies'), controller='ckanext.taxonomy.controllers:TaxonomyController', action='index') }}</li>
-  <li class="active">{{ h.nav_link(c.taxonomy.title, controller='ckanext.taxonomy.controllers:TaxonomyController', action='show', name=c.taxonomy.name) }}</li>
+  <li><a href="{{ h.url_for('dataset.search') }}">{{ _('Datasets') }}</a></li>
+  <li><a href="{{ h.url_for('taxonomy.index') }}">{{ _('Taxonomies') }}</a></li>
+  <li class="active"><a href="{{ h.url_for('taxonomy.show', name=taxonomy.name) }}">{{ taxonomy.title }}</a></li>
 {% endblock %}
 
 {% block primary_content %}
 
-    <h1>{{c.taxonomy.title}}</h1>
+    <h1>{{taxonomy.title}}</h1>
 
 
     <div style='background-color: #d0d0d0; padding: 20px; margin-bottom: 10px;'>
@@ -43,7 +43,7 @@
     <div class="col-md-4">
         <div id="tree" class="jstree-no-icons" style="display:none;">
             <ul>
-            {% for t in c.terms %}
+            {% for t in terms %}
                 {{ m.term_tree_html(t) }}
             {% endfor %}
             </ul>
@@ -85,8 +85,8 @@
         }
         </style>
         <div id="aim" role="menu" class="facet-box-unboxed">
-            <div class="facet-title">{{c.taxonomy.title}}</div>
-        {% for t in c.terms %}
+            <div class="facet-title">{{taxonomy.title}}</div>
+        {% for t in terms %}
             <div data-submenu-id="submenu-{{t.name}}" class="facet-option">
                 <a href="#">{{t.label}}</a>
                 <div id="submenu-{{t.name}}" class="popover" style="z-index:1001;display: none; top: -1px; left: 1142px;">
@@ -130,7 +130,7 @@
     <div class="col-md-3">
         <div>
             <ul class="collapsibleList">
-            {% for t in c.terms %}
+            {% for t in terms %}
                 {{ m.term_tree_checkbox_html(t) }}
             {% endfor %}
             </ul>

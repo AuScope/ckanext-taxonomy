@@ -10,24 +10,17 @@ class TaxonomyPlugin(p.SingletonPlugin):
     Taxonomy plugin that provides hierarchical 'tags'.
     '''
 
-    p.implements(p.IRoutes, inherit=True)
+    p.implements(p.IBlueprint)
     p.implements(p.IConfigurer, inherit=True)
     p.implements(p.IActions, inherit=True)
     p.implements(p.IAuthFunctions, inherit=True)
     p.implements(p.ITemplateHelpers, inherit=True)
 
-    def before_map(self, map):
-        ctrl = 'ckanext.taxonomy.controllers:TaxonomyController'
-        map.connect('taxonomies_index', '/taxonomies',
-            controller=ctrl,
-            action='index')
-        map.connect('taxonomies_show', '/taxonomies/:name',
-            controller=ctrl,
-            action='show')
-        return map
+    # IBlueprint
 
-    def after_map(self, map):
-        return map
+    def get_blueprint(self):
+        from ckanext.taxonomy.views import taxonomy_blueprint
+        return [taxonomy_blueprint]
 
     def update_config(self, config):
         p.toolkit.add_template_directory(config, 'templates')
