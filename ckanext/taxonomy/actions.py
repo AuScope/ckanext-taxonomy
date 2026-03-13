@@ -82,7 +82,7 @@ def taxonomy_create(context, data_dict):
     name = data_dict.get('name')
 
     title = logic.get_or_bust(data_dict, 'title')
-    uri = logic.get_or_bust(data_dict, 'uri')
+    uri = data_dict.get('uri', '')
 
     if not name:
         name = munge_name(title)
@@ -114,7 +114,7 @@ def taxonomy_update(context, data_dict):
     id = logic.get_or_bust(data_dict, 'id')
     name = logic.get_or_bust(data_dict, 'name')
     title = logic.get_or_bust(data_dict, 'title')
-    uri = logic.get_or_bust(data_dict, 'uri')
+    uri = data_dict.get('uri', '')
 
     tax = Taxonomy.get(id)
     if not tax:
@@ -273,10 +273,10 @@ def taxonomy_term_create(context, data_dict):
     taxonomy = logic.get_action('taxonomy_show')(context, {'id': taxonomy_id})
 
     label = logic.get_or_bust(data_dict, 'label')
-    uri = logic.get_or_bust(data_dict, 'uri')
+    uri = data_dict.get('uri', '')
     description = data_dict.get('description')
 
-    if model.Session.query(TaxonomyTerm).\
+    if uri and model.Session.query(TaxonomyTerm).\
             filter(TaxonomyTerm.uri == uri).\
             filter(TaxonomyTerm.taxonomy_id == taxonomy_id ).count() > 0:
         raise logic.ValidationError("Term uri already used in this taxonomy")
@@ -305,7 +305,7 @@ def taxonomy_term_update(context, data_dict):
 
     term.label = data_dict.get('label', term.label)
     term.parent_id = data_dict.get('parent_id', term.parent_id)
-    term.uri = logic.get_or_bust(data_dict, 'uri')
+    term.uri = data_dict.get('uri', term.uri)
     term.description = data_dict.get('description', '')
     term.extras = data_dict.get('extras', '')
 

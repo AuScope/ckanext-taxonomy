@@ -25,6 +25,12 @@ def _check_admin():
         toolkit.abort(403, toolkit._('Not authorized'))
 
 
+def _site_url():
+    """Return the site's base URL (no trailing slash)."""
+    import ckan.plugins.toolkit as toolkit
+    return toolkit.config.get('ckan.site_url', '').rstrip('/')
+
+
 # ── read views ───────────────────────────────────────────────────────
 
 def index():
@@ -110,11 +116,15 @@ def taxonomy_create():
     context = _context()
 
     if toolkit.request.method == 'POST':
-        data = {
-            'title': toolkit.request.form.get('title', '').strip(),
-            'name': toolkit.request.form.get('name', '').strip(),
-            'uri': toolkit.request.form.get('uri', '').strip(),
-        }
+        name = toolkit.request.form.get('name', '').strip()
+        title = toolkit.request.form.get('title', '').strip()
+        uri = toolkit.request.form.get('uri', '').strip()
+        if not name:
+            from ckan.lib.munge import munge_name
+            name = munge_name(title)
+        if not uri:
+            uri = '{}/taxonomies/{}'.format(_site_url(), name)
+        data = {'title': title, 'name': name, 'uri': uri}
         try:
             logic.get_action('taxonomy_create')(context, data)
             toolkit.h.flash_success(toolkit._('Taxonomy created'))
@@ -137,11 +147,15 @@ def taxonomy_edit(taxonomy_name):
     tax = logic.get_action('taxonomy_show')(context, {'id': taxonomy_name})
 
     if toolkit.request.method == 'POST':
+        name = toolkit.request.form.get('name', '').strip()
+        uri = toolkit.request.form.get('uri', '').strip()
+        if not uri:
+            uri = '{}/taxonomies/{}'.format(_site_url(), name or tax['name'])
         data = {
             'id': tax['id'],
             'title': toolkit.request.form.get('title', '').strip(),
-            'name': toolkit.request.form.get('name', '').strip(),
-            'uri': toolkit.request.form.get('uri', '').strip(),
+            'name': name,
+            'uri': uri,
         }
         try:
             logic.get_action('taxonomy_update')(context, data)
@@ -197,10 +211,11 @@ def term_create(taxonomy_name):
     parent_id = toolkit.request.args.get('parent_id', '')
 
     if toolkit.request.method == 'POST':
+        uri = toolkit.request.form.get('uri', '').strip()
         data = {
             'taxonomy_id': tax['id'],
             'label': toolkit.request.form.get('label', '').strip(),
-            'uri': toolkit.request.form.get('uri', '').strip(),
+            'uri': uri,
             'description': toolkit.request.form.get('description', '').strip(),
             'parent_id': toolkit.request.form.get('parent_id', '') or None,
         }
@@ -222,6 +237,13 @@ def term_create(taxonomy_name):
 
         try:
             term = logic.get_action('taxonomy_term_create')(context, data)
+            # Back-fill URI with site URL if it was left blank
+            if not data.get('uri'):
+                auto_uri = '{}/taxonomies/term/{}'.format(
+                    _site_url(), term['id'])
+                logic.get_action('taxonomy_term_update')(
+                    context,
+                    {'id': term['id'], 'uri': auto_uri})
             toolkit.h.flash_success(toolkit._('Term created'))
             return toolkit.redirect_to('taxonomy.term_detail',
                                        term_id=term['id'])
@@ -249,10 +271,13 @@ def term_edit(term_id):
         context, {'id': term['taxonomy_id']})
 
     if toolkit.request.method == 'POST':
+        uri = toolkit.request.form.get('uri', '').strip()
+        if not uri:
+            uri = '{}/taxonomies/term/{}'.format(_site_url(), term['id'])
         data = {
             'id': term['id'],
             'label': toolkit.request.form.get('label', '').strip(),
-            'uri': toolkit.request.form.get('uri', '').strip(),
+            'uri': uri,
             'description': toolkit.request.form.get('description', '').strip(),
             'parent_id': toolkit.request.form.get('parent_id', '') or None,
         }
