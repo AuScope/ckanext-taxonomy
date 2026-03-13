@@ -9,6 +9,7 @@
 """
 
 import json
+from functools import reduce
 
 import ckan.plugins.toolkit as toolkit
 import ckan.logic as logic
@@ -348,7 +349,7 @@ def _gather(d, key):
     Gather the values in d making sure we navigate down all 'children' nodes
     """
     res = []
-    for k, v in d.iteritems():
+    for k, v in d.items():
         if k == key:
             res.append([v])
         if k == 'children':

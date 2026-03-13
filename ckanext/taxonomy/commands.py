@@ -2,9 +2,9 @@ import logging
 import json
 
 import rdflib
-import skos
 
 import ckan.lib.cli as cli
+from ckanext.taxonomy.skos_loader import load_concepts
 
 log = logging.getLogger(__name__)
 
@@ -71,7 +71,7 @@ class TaxonomyCommand(cli.CkanCommand):
         elif cmd == 'cleanup':
             self.cleanup()
         else:
-            print self.usage
+            print(self.usage)
             log.error('Command "%s" not recognized' % (cmd,))
             return
 
@@ -87,33 +87,29 @@ class TaxonomyCommand(cli.CkanCommand):
         url = self.options.url
         filename = self.options.filename
         if not url and not filename:
-            print "No URL or FILENAME provided and one is required"
-            print self.usage
+            print("No URL or FILENAME provided and one is required")
+            print(self.usage)
             return
 
         if not self.options.name:
-            print "No NAME provided and it is required"
-            print self.usage
+            print("No NAME provided and it is required")
+            print(self.usage)
             return
 
         if not self.options.uri:
-            print "No URI provided and it is required"
-            print self.usage
+            print("No URI provided and it is required")
+            print(self.usage)
             return
 
-        print "Loading graph"
+        print("Loading graph")
         graph = rdflib.Graph()
-        result = graph.parse(url or filename)
-        loader = skos.RDFLoader(graph,
-                                max_depth=float('inf'),
-                                flat=True,
-                                lang=self.options.lang)
+        graph.parse(url or filename)
+        concepts = load_concepts(graph, lang=self.options.lang)
 
-        print "Processing concepts"
-        concepts = loader.getConcepts()
+        print("Processing concepts")
 
         top_level = []
-        for _, v in concepts.iteritems():
+        for _, v in concepts.items():
             if not v.broader:
                 top_level.append(v)
         top_level.sort(key=lambda x: x.prefLabel)
@@ -141,7 +137,7 @@ class TaxonomyCommand(cli.CkanCommand):
 
         for t in top_level:
             self._add_node(tx, t)
-        print 'Load complete'
+        print('Load complete')
 
     def load_extras(self):
         '''
@@ -167,33 +163,30 @@ class TaxonomyCommand(cli.CkanCommand):
         JSON extras field.
         '''
         if not self.options.filename:
-            print "No FILENAME provided and it is required"
-            print self.usage
+            print("No FILENAME provided and it is required")
+            print(self.usage)
             return
 
         if not self.options.name:
-            print "No NAME provided and it is required"
-            print self.usage
+            print("No NAME provided and it is required")
+            print(self.usage)
             return
 
-        import lib
+        from ckanext.taxonomy import lib
         lib.load_term_extras(self.options.filename, taxonomy_name=self.options.name)
-        print 'Extras loaded'
+        print('Extras loaded')
 
     def _add_node(self, tx, node, parent=None, depth=1):
         import ckan.logic as logic
 
-        print '   ' * depth, node.prefLabel.encode('utf-8')
+        print('   ' * depth, node.prefLabel)
 
         description = ''
         if hasattr(node, 'definition') and node.definition:
-            description = node.definition.encode('utf-8')
+            description = node.definition
 
-        print type(node)
-        # rdfs:comment print dir(node)
-
-        nd = logic.get_action('taxonomy_term_create')(self.context,  {
-            'label': node.prefLabel.encode('utf-8'),
+        nd = logic.get_action('taxonomy_term_create')(self.context, {
+            'label': node.prefLabel,
             'uri': node.uri,
             'description': description,
             'taxonomy_id': tx['id'],
@@ -201,6 +194,5 @@ class TaxonomyCommand(cli.CkanCommand):
         })
         node_id = nd['id']
 
-
-        for _, child in node.narrower.iteritems():
+        for _, child in node.narrower.items():
             self._add_node(tx, child, node_id, depth+1)

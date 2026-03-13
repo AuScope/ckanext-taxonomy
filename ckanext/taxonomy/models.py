@@ -20,7 +20,7 @@ metadata = MetaData()
 
 
 def make_uuid():
-    return unicode(uuid.uuid4())
+    return str(uuid.uuid4())
 
 
 class Taxonomy(Base):
