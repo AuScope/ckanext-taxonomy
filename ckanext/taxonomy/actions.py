@@ -281,6 +281,8 @@ def taxonomy_term_create(context, data_dict):
             filter(TaxonomyTerm.taxonomy_id == taxonomy_id ).count() > 0:
         raise logic.ValidationError("Term uri already used in this taxonomy")
 
+    if not data_dict.get('extras'):
+        data_dict.pop('extras', None)
     term = TaxonomyTerm(**data_dict)
     model.Session.add(term)
     model.Session.commit()
@@ -307,7 +309,7 @@ def taxonomy_term_update(context, data_dict):
     term.parent_id = data_dict.get('parent_id', term.parent_id)
     term.uri = data_dict.get('uri', term.uri)
     term.description = data_dict.get('description', '')
-    term.extras = data_dict.get('extras', '')
+    term.extras = data_dict.get('extras') or None
 
     model.Session.add(term)
     model.Session.commit()

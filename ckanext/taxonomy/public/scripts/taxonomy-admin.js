@@ -34,5 +34,61 @@
       childList.style.display = isOpen ? "none" : "block";
       toggle.classList.toggle("open", !isOpen);
     });
+
+    /* ── Filter / search bar ───────────────────────────────── */
+    var filterInput = document.getElementById("taxonomy-filter");
+    if (!filterInput) return;
+
+    var debounceTimer;
+    filterInput.addEventListener("input", function () {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(applyFilter, 150);
+    });
+
+    function applyFilter() {
+      var query = filterInput.value.trim().toLowerCase();
+
+      // Reset visibility and collapse state when filter is cleared
+      if (!query) {
+        container.querySelectorAll(".taxonomy-root, .taxonomy-node").forEach(function (el) {
+          el.style.display = "";
+        });
+        container.querySelectorAll(".taxonomy-children").forEach(function (ul) {
+          ul.style.display = "none";
+        });
+        container.querySelectorAll(".taxonomy-toggle").forEach(function (t) {
+          t.classList.remove("open");
+        });
+        return;
+      }
+
+      // 1. Hide everything, then selectively reveal matches + ancestors
+      container.querySelectorAll(".taxonomy-root").forEach(function (root) {
+        root.style.display = "none";
+      });
+      container.querySelectorAll(".taxonomy-node").forEach(function (node) {
+        node.style.display = "none";
+      });
+
+      // 2. Find all labels matching the query
+      container.querySelectorAll(".taxonomy-label").forEach(function (label) {
+        if (label.textContent.toLowerCase().indexOf(query) === -1) return;
+
+        // Show the matched element and all ancestors up to .taxonomy-root
+        var el = label.closest(".taxonomy-node, .taxonomy-root");
+        while (el) {
+          el.style.display = "";
+          // Expand parent <ul> so the match is visible
+          var parentUl = el.closest(".taxonomy-children");
+          if (parentUl) {
+            parentUl.style.display = "block";
+            var toggle = parentUl.previousElementSibling &&
+              parentUl.previousElementSibling.querySelector(".taxonomy-toggle");
+            if (toggle) toggle.classList.add("open");
+          }
+          el = el.parentElement ? el.parentElement.closest(".taxonomy-node, .taxonomy-root") : null;
+        }
+      });
+    }
   });
 })();

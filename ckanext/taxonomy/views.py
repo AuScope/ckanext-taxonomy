@@ -296,7 +296,7 @@ def term_edit(term_id):
                         'is_edit': True,
                     })
         else:
-            data['extras'] = ''
+            data['extras'] = None
 
         try:
             logic.get_action('taxonomy_term_update')(context, data)
