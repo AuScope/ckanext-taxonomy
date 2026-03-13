@@ -1,0 +1,81 @@
+{% extends "page.html" %}
+
+{% block subtitle %}
+  {% if is_edit %}{{ _('Edit Term') }}{% else %}{{ _('New Term') }}{% endif %}
+{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="{{ h.url_for('taxonomy.index') }}">{{ _('Taxonomies') }}</a></li>
+  <li><a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=taxonomy.name) }}">{{ taxonomy.title }}</a></li>
+  {% if is_edit and term %}
+    <li><a href="{{ h.url_for('taxonomy.term_detail', term_id=term.id) }}">{{ term.label }}</a></li>
+    <li class="active">{{ _('Edit') }}</li>
+  {% else %}
+    <li class="active">{{ _('New Term') }}</li>
+  {% endif %}
+{% endblock %}
+
+{% block primary_content %}
+<section class="module">
+  <div class="module-content">
+    <h1 class="page-heading">
+      {% if is_edit %}{{ _('Edit Term') }}{% else %}{{ _('New Term') }}{% endif %}
+      <small class="text-muted">in {{ taxonomy.title }}</small>
+    </h1>
+
+    <form method="post" class="form-horizontal">
+      <div class="form-group">
+        <label for="field-label" class="col-sm-2 control-label">{{ _('Label') }} *</label>
+        <div class="col-sm-10">
+          <input type="text" id="field-label" name="label" class="form-control"
+                 value="{{ term.label if term else '' }}" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="field-uri" class="col-sm-2 control-label">{{ _('URI') }} *</label>
+        <div class="col-sm-10">
+          <input type="text" id="field-uri" name="uri" class="form-control"
+                 value="{{ term.uri if term else '' }}" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="field-description" class="col-sm-2 control-label">{{ _('Description') }}</label>
+        <div class="col-sm-10">
+          <textarea id="field-description" name="description" class="form-control"
+                    rows="3">{{ term.description if term else '' }}</textarea>
+        </div>
+      </div>
+
+      <input type="hidden" name="parent_id"
+             value="{{ term.parent_id if (term and term.parent_id) else parent_id }}">
+
+      <div class="form-group">
+        <label for="field-extras" class="col-sm-2 control-label">{{ _('Extras') }}</label>
+        <div class="col-sm-10">
+          <textarea id="field-extras" name="extras" class="form-control" rows="3"
+                    placeholder='{{ _("JSON object, e.g.") }} {"key": "value"}'
+          >{% if term and term.extras %}{{ term.extras | tojson }}{% endif %}</textarea>
+          <span class="help-block">{{ _('Optional JSON object with extra metadata.') }}</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-primary">
+            {% if is_edit %}{{ _('Update Term') }}{% else %}{{ _('Create Term') }}{% endif %}
+          </button>
+          {% if is_edit and term %}
+            <a href="{{ h.url_for('taxonomy.term_detail', term_id=term.id) }}" class="btn btn-default">{{ _('Cancel') }}</a>
+          {% else %}
+            <a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=taxonomy.name) }}" class="btn btn-default">{{ _('Cancel') }}</a>
+          {% endif %}
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block secondary_content %}{% endblock %}

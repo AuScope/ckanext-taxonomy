@@ -9,6 +9,8 @@ Features:
 - Each term has a label, URI, and optional description
 - Taxonomies can be loaded from [SKOS](http://www.w3.org/2004/02/skos/specs) RDF documents
 - Full CRUD API for taxonomies and terms
+- **Admin UI** with tree view, detail pages, and inline create/edit/delete
+- **Taxonomies** navigation tab in the CKAN header
 
 Detailed API documentation is in [API.md](API.md).
 
@@ -100,6 +102,32 @@ All actions are available via `/api/3/action/<ACTION>`.
 | `taxonomy_term_update` | POST | `id`, `uri` |
 | `taxonomy_term_delete` | POST | `id` |
 
+## Admin Web UI
+
+The extension includes a built-in admin UI for managing taxonomies, accessible via the **Taxonomies** tab in the CKAN header navigation.
+
+### Pages
+
+| URL | Description |
+|-----|-------------|
+| `/taxonomies` | **Tree view** — all taxonomies with expandable term hierarchies |
+| `/taxonomies/<name>` | **Taxonomy detail** — info table + full term tree |
+| `/taxonomies/term/<id>` | **Term detail** — label, URI, description, parent, children, extras |
+| `/taxonomies/new` | Create a new taxonomy (admin only) |
+| `/taxonomies/<name>/edit` | Edit a taxonomy (admin only) |
+| `/taxonomies/<name>/delete` | Delete a taxonomy with confirmation (admin only) |
+| `/taxonomies/<name>/term/new` | Create a new term (admin only) |
+| `/taxonomies/term/<id>/edit` | Edit a term (admin only) |
+| `/taxonomies/term/<id>/delete` | Delete a term with confirmation (admin only) |
+
+### Features
+
+- **Tree view** with expand/collapse and clickable labels linking to detail pages
+- **Action buttons** (Add, Edit, Delete) appear on hover for admin users
+- **Delete confirmation** shows the count of child terms that will be recursively deleted
+- **Navigation tab** added to the CKAN header automatically when the plugin is enabled
+- Read pages are accessible to all users; create/edit/delete require sysadmin
+
 ## Importing SKOS documents
 
 > **Warning**: Loading a taxonomy will delete any existing taxonomy with the same name.
@@ -135,7 +163,7 @@ docker build -f Dockerfile.test -t ckanext-taxonomy-test .
 docker run --rm ckanext-taxonomy-test
 ```
 
-The test suite covers the vendored SKOS loader (`test_skos_loader.py`), Flask blueprint wiring (`test_views.py`), and Click CLI structure and YAML parsing (`test_cli.py`). Tests that depend on a full CKAN environment (actions, models, auth, seed logic) require running inside a CKAN Docker container with a database.
+The test suite covers the vendored SKOS loader (`test_skos_loader.py`), Flask blueprint wiring and admin routes (`test_views.py`), and Click CLI structure and YAML parsing (`test_cli.py`). Tests that depend on a full CKAN environment (actions, models, auth, seed logic) require running inside a CKAN Docker container with a database.
 
 ## Removing the extension
 
@@ -163,6 +191,7 @@ This fork has been updated from the original `datagovuk/ckanext-taxonomy` to wor
 | Templates | `h.nav_link(controller=..., action=...)` and `c.*` globals | `h.url_for('taxonomy.index')` and extra_vars |
 | CLI | `paster` commands only | Click CLI (`IClick`) + legacy paster via compatibility layer |
 | Seed data | Manual API calls or SKOS RDF only | YAML seed files via `ckan taxonomy seed-defaults` |
+| Admin UI | None (API only) | Built-in tree view, detail pages, and CRUD forms |
 | Tests | `nosetests` | `pytest` via Docker |
 
 ### Known follow-up items

@@ -1,0 +1,63 @@
+{% extends "page.html" %}
+
+{% block subtitle %}
+  {% if is_edit %}{{ _('Edit Taxonomy') }}{% else %}{{ _('New Taxonomy') }}{% endif %}
+{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="{{ h.url_for('taxonomy.index') }}">{{ _('Taxonomies') }}</a></li>
+  {% if is_edit and taxonomy %}
+    <li><a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=taxonomy.name) }}">{{ taxonomy.title or taxonomy.name }}</a></li>
+    <li class="active">{{ _('Edit') }}</li>
+  {% else %}
+    <li class="active">{{ _('New Taxonomy') }}</li>
+  {% endif %}
+{% endblock %}
+
+{% block primary_content %}
+<section class="module">
+  <div class="module-content">
+    <h1 class="page-heading">
+      {% if is_edit %}{{ _('Edit Taxonomy') }}{% else %}{{ _('New Taxonomy') }}{% endif %}
+    </h1>
+
+    <form method="post" class="form-horizontal">
+      <div class="form-group">
+        <label for="field-title" class="col-sm-2 control-label">{{ _('Title') }} *</label>
+        <div class="col-sm-10">
+          <input type="text" id="field-title" name="title" class="form-control"
+                 value="{{ taxonomy.title if taxonomy else '' }}" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="field-name" class="col-sm-2 control-label">{{ _('Name') }}</label>
+        <div class="col-sm-10">
+          <input type="text" id="field-name" name="name" class="form-control"
+                 value="{{ taxonomy.name if taxonomy else '' }}"
+                 placeholder="{{ _('Auto-generated from title if blank') }}">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="field-uri" class="col-sm-2 control-label">{{ _('URI') }} *</label>
+        <div class="col-sm-10">
+          <input type="text" id="field-uri" name="uri" class="form-control"
+                 value="{{ taxonomy.uri if taxonomy else '' }}" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn btn-primary">
+            {% if is_edit %}{{ _('Update Taxonomy') }}{% else %}{{ _('Create Taxonomy') }}{% endif %}
+          </button>
+          <a href="{{ h.url_for('taxonomy.index') }}" class="btn btn-default">{{ _('Cancel') }}</a>
+        </div>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block secondary_content %}{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "page.html" %}
+
+{% block subtitle %}{{ _('Confirm Delete') }}{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="{{ h.url_for('taxonomy.index') }}">{{ _('Taxonomies') }}</a></li>
+  {% if item_type == 'taxonomy' %}
+    <li><a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=item.name) }}">{{ item.title or item.name }}</a></li>
+  {% elif item_type == 'term' %}
+    <li><a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=taxonomy.name) }}">{{ taxonomy.title }}</a></li>
+    <li><a href="{{ h.url_for('taxonomy.term_detail', term_id=item.id) }}">{{ item.label }}</a></li>
+  {% endif %}
+  <li class="active">{{ _('Delete') }}</li>
+{% endblock %}
+
+{% block primary_content %}
+<section class="module">
+  <div class="module-content">
+    <h1 class="page-heading">{{ _('Confirm Delete') }}</h1>
+
+    <div class="alert alert-danger">
+      {% if item_type == 'taxonomy' %}
+        <p><strong>{{ _('Are you sure you want to delete the taxonomy') }} "{{ item.title or item.name }}"?</strong></p>
+        {% if term_count > 0 %}
+          <p>{{ _('This will also delete') }} <strong>{{ term_count }}</strong> {{ _('term(s) belonging to this taxonomy.') }}</p>
+        {% endif %}
+      {% elif item_type == 'term' %}
+        <p><strong>{{ _('Are you sure you want to delete the term') }} "{{ item.label }}"?</strong></p>
+        {% if term_count > 0 %}
+          <p>{{ _('This will also delete') }} <strong>{{ term_count }}</strong> {{ _('child term(s).') }}</p>
+        {% endif %}
+      {% endif %}
+      <p>{{ _('This action cannot be undone.') }}</p>
+    </div>
+
+    <form method="post">
+      <button type="submit" class="btn btn-danger">
+        <i class="fa fa-trash"></i> {{ _('Yes, delete') }}
+      </button>
+      {% if item_type == 'taxonomy' %}
+        <a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=item.name) }}" class="btn btn-default">{{ _('Cancel') }}</a>
+      {% elif item_type == 'term' %}
+        <a href="{{ h.url_for('taxonomy.term_detail', term_id=item.id) }}" class="btn btn-default">{{ _('Cancel') }}</a>
+      {% endif %}
+    </form>
+  </div>
+</section>
+{% endblock %}
+
+{% block secondary_content %}{% endblock %}

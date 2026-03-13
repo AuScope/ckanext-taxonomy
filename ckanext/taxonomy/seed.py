@@ -26,7 +26,7 @@ def seed_taxonomies(taxonomies_data, force=False, sync=False):
         force: if True, clear all existing data and re-seed
         sync: if True, add only missing taxonomies/terms
     """
-    from ckanext.taxonomy.models import Taxonomy, TaxonomyTerm
+    from ckanext.taxonomy.models import Taxonomy, TaxonomyTerm, make_uuid
     import ckan.model as model
 
     existing_count = model.Session.query(Taxonomy).count()
@@ -59,6 +59,7 @@ def seed_taxonomies(taxonomies_data, force=False, sync=False):
             continue
         else:
             tax_obj = Taxonomy(
+                id=make_uuid(),
                 name=name,
                 title=tax_data.get('title', name),
                 uri=tax_data.get('uri', ''),
@@ -66,7 +67,7 @@ def seed_taxonomies(taxonomies_data, force=False, sync=False):
             model.Session.add(tax_obj)
             model.Session.flush()
             created_tax += 1
-            log.info("Created taxonomy '%s'", name)
+            log.info("Created taxonomy '%s' (id=%s)", name, tax_obj.id)
 
         terms_data = tax_data.get('terms', [])
         count = _create_terms_recursive(
@@ -74,7 +75,9 @@ def seed_taxonomies(taxonomies_data, force=False, sync=False):
         )
         created_terms += count
 
-    model.Session.commit()
+        # Commit after each taxonomy so partial progress is preserved
+        model.Session.commit()
+
     log.info(
         "Seeding complete: %d taxonomies created, %d terms created",
         created_tax, created_terms,
@@ -84,7 +87,7 @@ def seed_taxonomies(taxonomies_data, force=False, sync=False):
 
 def _create_terms_recursive(terms_data, taxonomy_id, parent_id, sync):
     """Recursively create taxonomy terms. Returns count of terms created."""
-    from ckanext.taxonomy.models import TaxonomyTerm
+    from ckanext.taxonomy.models import TaxonomyTerm, make_uuid
     import ckan.model as model
 
     count = 0
@@ -104,6 +107,7 @@ def _create_terms_recursive(terms_data, taxonomy_id, parent_id, sync):
                 term_id = existing.id
         else:
             term = TaxonomyTerm(
+                id=make_uuid(),
                 label=label,
                 uri=uri,
                 description=description,

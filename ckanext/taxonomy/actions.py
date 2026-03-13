@@ -150,7 +150,8 @@ def taxonomy_delete(context, data_dict):
 
     terms = model.Session.query(TaxonomyTerm)\
         .filter(TaxonomyTerm.taxonomy == taxonomy)
-    map(model.Session.delete, terms.all())
+    for term in terms.all():
+        model.Session.delete(term)
 
     model.Session.delete(taxonomy)
     model.Session.commit()

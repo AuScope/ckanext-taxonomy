@@ -1,0 +1,90 @@
+{% extends "page.html" %}
+
+{% block subtitle %}{{ term.label }}{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="{{ h.url_for('taxonomy.index') }}">{{ _('Taxonomies') }}</a></li>
+  <li><a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=taxonomy.name) }}">{{ taxonomy.title }}</a></li>
+  <li class="active">{{ term.label }}</li>
+{% endblock %}
+
+{% block primary_content %}
+<section class="module">
+  <div class="module-content">
+    <h1 class="page-heading">
+      {{ term.label }}
+      {% if is_admin %}
+        <span class="pull-right">
+          <a href="{{ h.url_for('taxonomy.term_create', taxonomy_name=taxonomy.name, parent_id=term.id) }}"
+             class="btn btn-primary btn-sm">
+            <i class="fa fa-plus"></i> {{ _('Add Child Term') }}
+          </a>
+          <a href="{{ h.url_for('taxonomy.term_edit', term_id=term.id) }}"
+             class="btn btn-default btn-sm">
+            <i class="fa fa-pencil"></i> {{ _('Edit') }}
+          </a>
+          <a href="{{ h.url_for('taxonomy.term_delete', term_id=term.id) }}"
+             class="btn btn-danger btn-sm">
+            <i class="fa fa-trash"></i> {{ _('Delete') }}
+          </a>
+        </span>
+      {% endif %}
+    </h1>
+
+    <table class="table table-striped table-bordered">
+      <tbody>
+        <tr><th>{{ _('Label') }}</th><td>{{ term.label }}</td></tr>
+        <tr><th>{{ _('Description') }}</th><td>{{ term.description or '-' }}</td></tr>
+        <tr><th>{{ _('URI') }}</th><td>
+          {% if term.uri %}
+            <a href="{{ term.uri }}" target="_blank" rel="noopener">{{ term.uri }}</a>
+          {% else %}-{% endif %}
+        </td></tr>
+        <tr><th>{{ _('Taxonomy') }}</th><td>
+          <a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=taxonomy.name) }}">{{ taxonomy.title }}</a>
+        </td></tr>
+        <tr><th>{{ _('Parent') }}</th><td>
+          {% if parent %}
+            <a href="{{ h.url_for('taxonomy.term_detail', term_id=parent.id) }}">{{ parent.label }}</a>
+          {% else %}
+            <em>{{ _('(top-level term)') }}</em>
+          {% endif %}
+        </td></tr>
+        <tr><th>{{ _('ID') }}</th><td><code>{{ term.id }}</code></td></tr>
+        {% if term.extras %}
+        <tr><th>{{ _('Extras') }}</th><td>
+          <dl class="dl-horizontal">
+            {% for key, val in term.extras.items() %}
+              <dt>{{ key }}</dt><dd>{{ val }}</dd>
+            {% endfor %}
+          </dl>
+        </td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+
+    {% if children %}
+    <h2>{{ _('Children') }}</h2>
+    <ul class="list-group">
+      {% for child in children %}
+      <li class="list-group-item">
+        <a href="{{ h.url_for('taxonomy.term_detail', term_id=child.id) }}">{{ child.label }}</a>
+        {% if child.description %}
+          <span class="text-muted"> &mdash; {{ child.description }}</span>
+        {% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block secondary_content %}
+  <section class="module module-narrow">
+    <h2 class="module-heading"><i class="fa fa-info-circle"></i> {{ _('Term Info') }}</h2>
+    <div class="module-content">
+      <p>{{ _('This page shows the detail for a single taxonomy term.') }}</p>
+    </div>
+  </section>
+{% endblock %}

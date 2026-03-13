@@ -1,0 +1,119 @@
+{% extends "page.html" %}
+
+{% block subtitle %}{{ taxonomy.title }}{% endblock %}
+
+{% block styles %}
+  {{ super() }}
+  <link rel="stylesheet" href="/css/taxonomy-admin.css">
+{% endblock %}
+
+{% block scripts %}
+  {{ super() }}
+  <script src="/scripts/taxonomy-admin.js"></script>
+{% endblock %}
+
+{% block breadcrumb_content %}
+  <li><a href="{{ h.url_for('taxonomy.index') }}">{{ _('Taxonomies') }}</a></li>
+  <li class="active"><a href="{{ h.url_for('taxonomy.taxonomy_detail', taxonomy_name=taxonomy.name) }}">{{ taxonomy.title }}</a></li>
+{% endblock %}
+
+{% block primary_content %}
+<section class="module">
+  <div class="module-content">
+    <h1 class="page-heading">
+      {{ taxonomy.title }}
+      {% if is_admin %}
+        <span class="pull-right">
+          <a href="{{ h.url_for('taxonomy.term_create', taxonomy_name=taxonomy.name) }}"
+             class="btn btn-primary btn-sm">
+            <i class="fa fa-plus"></i> {{ _('Add Term') }}
+          </a>
+          <a href="{{ h.url_for('taxonomy.taxonomy_edit', taxonomy_name=taxonomy.name) }}"
+             class="btn btn-default btn-sm">
+            <i class="fa fa-pencil"></i> {{ _('Edit') }}
+          </a>
+          <a href="{{ h.url_for('taxonomy.taxonomy_delete', taxonomy_name=taxonomy.name) }}"
+             class="btn btn-danger btn-sm">
+            <i class="fa fa-trash"></i> {{ _('Delete') }}
+          </a>
+        </span>
+      {% endif %}
+    </h1>
+
+    <table class="table table-striped table-bordered">
+      <tbody>
+        <tr><th>{{ _('Name') }}</th><td>{{ taxonomy.name }}</td></tr>
+        <tr><th>{{ _('Title') }}</th><td>{{ taxonomy.title }}</td></tr>
+        <tr><th>{{ _('URI') }}</th><td>
+          {% if taxonomy.uri %}
+            <a href="{{ taxonomy.uri }}" target="_blank" rel="noopener">{{ taxonomy.uri }}</a>
+          {% else %}-{% endif %}
+        </td></tr>
+        <tr><th>{{ _('ID') }}</th><td><code>{{ taxonomy.id }}</code></td></tr>
+      </tbody>
+    </table>
+
+    <h2>{{ _('Terms') }}</h2>
+    {% if terms %}
+    <div class="taxonomy-tree-container">
+      <ul class="taxonomy-children" style="display:block;">
+        {% for term in terms %}
+          {{ _render_term_node(term, taxonomy, is_admin) }}
+        {% endfor %}
+      </ul>
+    </div>
+    {% else %}
+      <p class="empty">{{ _('No terms in this taxonomy.') }}</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+
+{% block secondary_content %}
+  <section class="module module-narrow">
+    <h2 class="module-heading"><i class="fa fa-info-circle"></i> {{ _('Taxonomy Info') }}</h2>
+    <div class="module-content">
+      <p>{{ _('This page shows all terms in a hierarchical tree.') }}</p>
+      <p>{{ _('Click on any term to view its detail page.') }}</p>
+    </div>
+  </section>
+{% endblock %}
+
+{% macro _render_term_node(term, tax, is_admin) %}
+<li class="taxonomy-node">
+  <div class="taxonomy-node-row">
+    <span class="taxonomy-toggle" title="Expand/collapse">
+      {% if term.children %}
+        <i class="fa fa-caret-right"></i>
+      {% else %}
+        <i class="fa fa-circle-o fa-xs"></i>
+      {% endif %}
+    </span>
+    <a href="{{ h.url_for('taxonomy.term_detail', term_id=term.id) }}"
+       class="taxonomy-label">{{ term.label }}</a>
+    {% if is_admin %}
+    <span class="taxonomy-actions">
+      <a href="{{ h.url_for('taxonomy.term_create', taxonomy_name=tax.name, parent_id=term.id) }}"
+         class="btn btn-xs btn-default" title="{{ _('Add child') }}">
+        <i class="fa fa-plus"></i>
+      </a>
+      <a href="{{ h.url_for('taxonomy.term_edit', term_id=term.id) }}"
+         class="btn btn-xs btn-default" title="{{ _('Edit') }}">
+        <i class="fa fa-pencil"></i>
+      </a>
+      <a href="{{ h.url_for('taxonomy.term_delete', term_id=term.id) }}"
+         class="btn btn-xs btn-danger" title="{{ _('Delete') }}">
+        <i class="fa fa-trash"></i>
+      </a>
+    </span>
+    {% endif %}
+  </div>
+  {% if term.children %}
+  <ul class="taxonomy-children" style="display:none;">
+    {% for child in term.children %}
+      {{ _render_term_node(child, tax, is_admin) }}
+    {% endfor %}
+  </ul>
+  {% endif %}
+</li>
+{% endmacro %}

@@ -1,0 +1,85 @@
+/* Taxonomy tree view styles */
+
+.taxonomy-tree-container {
+  margin: 10px 0;
+}
+
+.taxonomy-root {
+  margin-bottom: 4px;
+}
+
+.taxonomy-node {
+  list-style: none;
+}
+
+.taxonomy-node-row,
+.taxonomy-node--root {
+  display: flex;
+  align-items: center;
+  padding: 4px 6px;
+  border-radius: 3px;
+  position: relative;
+}
+
+.taxonomy-node-row:hover,
+.taxonomy-node--root:hover {
+  background-color: #f5f5f5;
+}
+
+.taxonomy-toggle {
+  cursor: pointer;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+  color: #888;
+  user-select: none;
+}
+
+.taxonomy-toggle .fa-caret-right {
+  transition: transform 0.15s ease;
+}
+
+.taxonomy-toggle.open .fa-caret-right {
+  transform: rotate(90deg);
+}
+
+.taxonomy-label {
+  margin-left: 4px;
+  text-decoration: none;
+  color: #333;
+  flex-grow: 1;
+}
+
+.taxonomy-label:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+.taxonomy-node--root .taxonomy-label {
+  font-weight: 600;
+  font-size: 1.05em;
+}
+
+/* Action buttons — hidden by default, shown on hover */
+.taxonomy-actions {
+  display: none;
+  margin-left: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.taxonomy-node-row:hover .taxonomy-actions,
+.taxonomy-node--root:hover .taxonomy-actions {
+  display: inline-block;
+}
+
+.taxonomy-actions .btn {
+  padding: 1px 5px;
+  margin-left: 2px;
+}
+
+/* Nested children */
+.taxonomy-children {
+  padding-left: 22px;
+  margin: 0;
+}
