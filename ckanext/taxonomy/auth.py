@@ -1,5 +1,13 @@
 from ckan.logic import auth_allow_anonymous_access
 
+from ckanext.taxonomy.permissions import user_can_manage_taxonomy
+
+
+def _check_manage(context):
+    """Return an auth-result dict based on the org-whitelist permission helper."""
+    user = context.get('user', '') if context else ''
+    return {'success': user_can_manage_taxonomy(user)}
+
 
 @auth_allow_anonymous_access
 def taxonomy_list(context=None, data_dict=None):
@@ -22,33 +30,32 @@ def taxonomy_show(context=None, data_dict=None):
 @auth_allow_anonymous_access
 def taxonomy_create(context=None, data_dict=None):
     """
-    Can the user create a new taxonomy.  This is only available to
-    system administrators.
+    Can the user create a new taxonomy.
 
-    There is a shortcut where this will not be called for sysadmins
+    Allowed for sysadmins and admins of whitelisted organisations
+    (configured via ``ckanext.taxonomy.orgs``).
     """
-    return {'success': False}
+    return _check_manage(context)
 
 
 @auth_allow_anonymous_access
 def taxonomy_update(context=None, data_dict=None):
     """
-    Can the user update an existing taxonomy.  This is only available to
-    system administrators.
+    Can the user update an existing taxonomy.
 
-    There is a shortcut where this will not be called for sysadmins
+    Allowed for sysadmins and admins of whitelisted organisations.
     """
-    return {'success': False}
+    return _check_manage(context)
 
 
 @auth_allow_anonymous_access
 def taxonomy_delete(context=None, data_dict=None):
     """
-    Can a user delete a taxonomy.  System administrators only.
+    Can a user delete a taxonomy.
 
-    There is a shortcut where this will not be called for sysadmins
+    Allowed for sysadmins and admins of whitelisted organisations.
     """
-    return {'success': False}
+    return _check_manage(context)
 
 
 @auth_allow_anonymous_access
@@ -78,29 +85,28 @@ def taxonomy_term_show(context=None, data_dict=None):
 @auth_allow_anonymous_access
 def taxonomy_term_create(context=None, data_dict=None):
     """
-    Can a user create a new taxonomy term.  Currently only system
-    administrators
+    Can a user create a new taxonomy term.
 
-    There is a shortcut where this will not be called for sysadmins
+    Allowed for sysadmins and admins of whitelisted organisations.
     """
-    return {'success': False}
+    return _check_manage(context)
 
 
 @auth_allow_anonymous_access
 def taxonomy_term_update(context=None, data_dict=None):
     """
-    Can a user update an existing term.  Only system administrators
+    Can a user update an existing term.
 
-    There is a shortcut where this will not be called for sysadmins
+    Allowed for sysadmins and admins of whitelisted organisations.
     """
-    return {'success': False}
+    return _check_manage(context)
 
 
 @auth_allow_anonymous_access
 def taxonomy_term_delete(context=None, data_dict=None):
     """
-    Can a user delete a taxonomy term. System administrators only
+    Can a user delete a taxonomy term.
 
-    There is a shortcut where this will not be called for sysadmins
+    Allowed for sysadmins and admins of whitelisted organisations.
     """
-    return {'success': False}
+    return _check_manage(context)
