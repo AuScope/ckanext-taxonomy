@@ -1,4 +1,5 @@
 from flask import Blueprint
+from ckanext.taxonomy.helpers import _normalise_parent_id
 
 taxonomy_blueprint = Blueprint(
     'taxonomy', __name__,
@@ -208,7 +209,7 @@ def term_create(taxonomy_name):
     context = _context()
 
     tax = logic.get_action('taxonomy_show')(context, {'id': taxonomy_name})
-    parent_id = toolkit.request.args.get('parent_id', '')
+    parent_id = _normalise_parent_id(toolkit.request.args.get('parent_id')) or ''
 
     if toolkit.request.method == 'POST':
         uri = toolkit.request.form.get('uri', '').strip()
@@ -217,7 +218,7 @@ def term_create(taxonomy_name):
             'label': toolkit.request.form.get('label', '').strip(),
             'uri': uri,
             'description': toolkit.request.form.get('description', '').strip(),
-            'parent_id': toolkit.request.form.get('parent_id', '') or None,
+            'parent_id': _normalise_parent_id(toolkit.request.args.get('parent_id')) or '',
         }
         # Parse extras from form
         extras_str = toolkit.request.form.get('extras', '').strip()
@@ -279,7 +280,7 @@ def term_edit(term_id):
             'label': toolkit.request.form.get('label', '').strip(),
             'uri': uri,
             'description': toolkit.request.form.get('description', '').strip(),
-            'parent_id': toolkit.request.form.get('parent_id', '') or None,
+            'parent_id': _normalise_parent_id(toolkit.request.args.get('parent_id')) or '',
         }
         extras_str = toolkit.request.form.get('extras', '').strip()
         if extras_str:

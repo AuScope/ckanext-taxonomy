@@ -49,8 +49,9 @@
         </div>
       </div>
 
+      {% set current_parent_id = (term.parent_id if (term and term.parent_id) else parent_id) or '' %}
       <input type="hidden" name="parent_id"
-             value="{{ term.parent_id if (term and term.parent_id) else parent_id }}">
+             value="{{ current_parent_id }}">
 
       <div class="form-group">
         <label for="field-extras" class="col-sm-2 control-label">{{ _('Extras') }}</label>

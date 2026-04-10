@@ -16,6 +16,7 @@ import ckan.logic as logic
 
 from ckan.lib.munge import munge_name
 from ckanext.taxonomy.models import Taxonomy, TaxonomyTerm
+from ckanext.taxonomy.helpers import _normalise_parent_id
 
 _check_access = logic.check_access
 
@@ -261,31 +262,34 @@ def taxonomy_term_show_bulk(context, data_dict):
 
 
 def taxonomy_term_create(context, data_dict):
-    """ Allows for the creation of a new taxonomy term.
-
-    :returns: The newly updated term
-    :rtype: A dictionary
-    """
     _check_access('taxonomy_term_create', context, data_dict)
     model = context['model']
 
     taxonomy_id = logic.get_or_bust(data_dict, 'taxonomy_id')
-    taxonomy = logic.get_action('taxonomy_show')(context, {'id': taxonomy_id})
+    logic.get_action('taxonomy_show')(context, {'id': taxonomy_id})
 
-    label = logic.get_or_bust(data_dict, 'label')
+    logic.get_or_bust(data_dict, 'label')
     uri = data_dict.get('uri', '')
-    description = data_dict.get('description')
 
-    if uri and model.Session.query(TaxonomyTerm).\
-            filter(TaxonomyTerm.uri == uri).\
-            filter(TaxonomyTerm.taxonomy_id == taxonomy_id ).count() > 0:
+    if uri and model.Session.query(TaxonomyTerm)\
+            .filter(TaxonomyTerm.uri == uri)\
+            .filter(TaxonomyTerm.taxonomy_id == taxonomy_id)\
+            .count() > 0:
         raise logic.ValidationError("Term uri already used in this taxonomy")
 
     if not data_dict.get('extras'):
         data_dict.pop('extras', None)
+
+    parent_id = _normalise_parent_id(data_dict.get('parent_id'))
+    data_dict['parent_id'] = parent_id
+
     term = TaxonomyTerm(**data_dict)
     model.Session.add(term)
-    model.Session.commit()
+    try:
+        model.Session.commit()
+    except Exception:
+        model.Session.rollback()
+        raise
 
     return term.as_dict()
 
@@ -305,14 +309,20 @@ def taxonomy_term_update(context, data_dict):
     if not term:
         raise logic.NotFound()
 
+    parent_id = _normalise_parent_id(data_dict.get('parent_id', term.parent_id))
+    
     term.label = data_dict.get('label', term.label)
-    term.parent_id = data_dict.get('parent_id', term.parent_id)
+    term.parent_id = parent_id
     term.uri = data_dict.get('uri', term.uri)
     term.description = data_dict.get('description', '')
     term.extras = data_dict.get('extras') or None
 
     model.Session.add(term)
-    model.Session.commit()
+    try:
+        model.Session.commit()
+    except Exception:
+        model.Session.rollback()
+        raise
 
     return term.as_dict()
 
