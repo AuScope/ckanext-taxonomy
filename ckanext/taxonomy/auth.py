@@ -33,7 +33,7 @@ def taxonomy_create(context=None, data_dict=None):
     Can the user create a new taxonomy.
 
     Allowed for sysadmins and admins of whitelisted organisations
-    (configured via ``ckanext.taxonomy.orgs``).
+    (configured via ``ckanext.admin.orgs``).
     """
     return _check_manage(context)
 

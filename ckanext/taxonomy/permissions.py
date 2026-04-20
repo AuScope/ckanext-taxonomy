@@ -6,7 +6,7 @@ import ckan.plugins.toolkit as toolkit
 
 log = logging.getLogger(__name__)
 
-CONFIG_KEY = 'ckanext.taxonomy.orgs'
+CONFIG_KEY = 'ckanext.admin.orgs'
 
 
 def _parse_org_whitelist():
@@ -43,7 +43,7 @@ def user_can_manage_taxonomy(user_name):
     Returns ``True`` when any of the following is true:
 
     1. The user is a CKAN sysadmin.
-    2. ``ckanext.taxonomy.orgs`` is configured **and** the user is an
+    2. ``ckanext.admin.orgs`` is configured **and** the user is an
        admin of at least one of the listed organisations (or any
        organisation when the value is ``*``).
 
