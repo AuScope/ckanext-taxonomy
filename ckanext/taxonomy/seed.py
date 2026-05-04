@@ -9,6 +9,20 @@ import yaml
 log = logging.getLogger(__name__)
 
 
+def _site_url():
+    """Return the site's base URL (no trailing slash)."""
+    import ckan.plugins.toolkit as toolkit
+    return toolkit.config.get('ckan.site_url', '').rstrip('/')
+
+
+def _auto_taxonomy_uri(name):
+    return '{}/taxonomies/{}'.format(_site_url(), name)
+
+
+def _auto_term_uri(term_id):
+    return '{}/taxonomies/term/{}'.format(_site_url(), term_id)
+
+
 def parse_yaml(filepath):
     """Parse a taxonomy YAML file and return the list of taxonomy dicts."""
     with open(filepath, 'r', encoding='utf-8') as f:
@@ -58,11 +72,14 @@ def seed_taxonomies(taxonomies_data, force=False, sync=False):
             log.info("Taxonomy '%s' already exists, skipping", name)
             continue
         else:
+            tax_uri = (tax_data.get('uri') or '').strip()
+            if not tax_uri:
+                tax_uri = _auto_taxonomy_uri(name)
             tax_obj = Taxonomy(
                 id=make_uuid(),
                 name=name,
                 title=tax_data.get('title', name),
-                uri=tax_data.get('uri', ''),
+                uri=tax_uri,
             )
             model.Session.add(tax_obj)
             model.Session.flush()
@@ -93,7 +110,7 @@ def _create_terms_recursive(terms_data, taxonomy_id, parent_id, sync):
     count = 0
     for term_data in terms_data:
         label = term_data['label']
-        uri = term_data.get('uri', '')
+        uri = (term_data.get('uri') or '').strip()
         description = term_data.get('description', '')
         extras = term_data.get('extras')
 
@@ -106,8 +123,11 @@ def _create_terms_recursive(terms_data, taxonomy_id, parent_id, sync):
             else:
                 term_id = existing.id
         else:
+            new_id = make_uuid()
+            if not uri:
+                uri = _auto_term_uri(new_id)
             term = TaxonomyTerm(
-                id=make_uuid(),
+                id=new_id,
                 label=label,
                 uri=uri,
                 description=description,
