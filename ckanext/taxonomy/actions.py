@@ -303,16 +303,14 @@ def taxonomy_term_update(context, data_dict):
     _check_access('taxonomy_term_update', context, data_dict)
     model = context['model']
 
-    id = logic.get_or_bust(data_dict, 'id')
+    idx = logic.get_or_bust(data_dict, 'id')
 
-    term = TaxonomyTerm.get(id)
+    term = TaxonomyTerm.get(idx)
     if not term:
         raise logic.NotFound()
 
-    parent_id = _normalise_parent_id(data_dict.get('parent_id', term.parent_id))
     
     term.label = data_dict.get('label', term.label)
-    term.parent_id = parent_id
     term.uri = data_dict.get('uri', term.uri)
     term.description = data_dict.get('description', '')
     term.extras = data_dict.get('extras') or None
@@ -347,12 +345,19 @@ def taxonomy_term_delete(context, data_dict):
     # Now we just need to iterate through the tree and gather up IDs
     # to delete....
     ids = _gather(term, 'id')
-    todelete = model.Session.query(TaxonomyTerm).\
-        filter(TaxonomyTerm.id.in_(ids))
+    if ids:
+        todelete = model.Session.query(TaxonomyTerm)\
+            .filter(TaxonomyTerm.id.in_(ids))\
+            .all()
 
-    if len(ids):
-        map(model.Session.delete, todelete)
-        model.Session.commit()
+        for item in todelete:
+            model.Session.delete(item)
+
+        try:
+            model.Session.commit()
+        except Exception:
+            model.Session.rollback()
+            raise
 
     return term
 
